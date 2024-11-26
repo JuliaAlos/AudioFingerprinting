@@ -82,7 +82,7 @@ if __name__ == '__main__':
   msg = ' * recorded %d samples'
   print(colored(msg, attrs=['dark']) % len(data[0]))
 
-  reader.save_recorded('test2.wav')
+  reader.save_recorded('test.wav')
 
 
   Fs = fingerprint.DEFAULT_FS
@@ -131,14 +131,18 @@ if __name__ == '__main__':
             ))
 
         for hash_value, sid, db_offset in x:
-            # Ensure db_offset is an integer before performing the subtraction
-            try:
-                db_offset = int(db_offset)  # Convert to int if necessary
-                yield (sid, db_offset - mapper[hash_value])  # Perform the subtraction
-            except ValueError as e:
-                print(f"Error converting db_offset: {e}")
-            except KeyError as e:
-                print(f"Hash value not found in mapper: {e}")
+          try:
+              if isinstance(db_offset, bytes):
+                  # Convert the byte string to an integer
+                  db_offset = int.from_bytes(db_offset, byteorder='little')  # Use 'big' if needed
+              else:
+                  db_offset = int(db_offset)  # Convert to int if it's already a valid integer
+
+              yield (sid, db_offset - mapper[hash_value])  # Perform the subtraction
+          except ValueError as e:
+              print(f"Error converting db_offset: {e}")
+          except KeyError as e:
+              print(f"Hash value not found in mapper: {e}")
 
 
 
